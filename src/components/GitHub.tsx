@@ -1,10 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Github as GithubIcon, ExternalLink, GitFork, Star, Code2 } from "lucide-react";
 import { GitHubCalendar } from "react-github-calendar";
 
 export default function GitHub() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const greenTheme = {
         light: ['#e8f5e9', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
         dark: ['#142e1d', '#0e4429', '#006d32', '#26a641', '#39d353'],
@@ -50,18 +57,24 @@ export default function GitHub() {
                                 </div>
                                 
                                 {/* Contribution Graph (Heatmap) */}
-                                <div className="w-full overflow-hidden overflow-x-auto flex flex-col items-center md:items-end justify-center md:justify-end">
-                                    <GitHubCalendar 
-                                        username="Sw-apnil" 
-                                        theme={greenTheme}
-                                        colorScheme="dark"
-                                        labels={{
-                                            totalCount: '{{count}} contributions in the last half year',
-                                        }}
-                                        blockSize={12}
-                                        blockMargin={4}
-                                        fontSize={12}
-                                    />
+                                <div className="w-full overflow-hidden overflow-x-auto flex flex-col items-center md:items-end justify-center md:justify-end min-h-[150px]">
+                                    {mounted ? (
+                                        <GitHubCalendar 
+                                            username="Sw-apnil" 
+                                            theme={greenTheme}
+                                            colorScheme="dark"
+                                            labels={{
+                                                totalCount: '{{count}} contributions in the last half year',
+                                            }}
+                                            blockSize={12}
+                                            blockMargin={4}
+                                            fontSize={12}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center min-h-[120px]">
+                                            <div className="w-full max-w-[600px] h-[120px] bg-border/20 rounded-md animate-pulse"></div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
