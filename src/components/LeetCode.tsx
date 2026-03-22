@@ -16,23 +16,20 @@ export default function LeetCode() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [userRes, contestRes, calRes] = await Promise.all([
-                    fetch("https://alfa-leetcode-api.onrender.com/codehunter19/solved"),
-                    fetch("https://alfa-leetcode-api.onrender.com/codehunter19/contest"),
-                    fetch("https://alfa-leetcode-api.onrender.com/codehunter19/calendar")
-                ]);
-
-                const userData = await userRes.json();
-                const contestData = await contestRes.json();
-                const calData = await calRes.json();
+                const res = await fetch("/api/leetcode");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch LeetCode data from internal API");
+                }
+                
+                const { userData, contestData, calData } = await res.json();
 
                 setStats({
-                    solved: userData.solvedProblem || 0,
-                    contestRating: Math.round(contestData.contestRating) || 0,
-                    topPercentage: contestData.contestTopPercentage || 0,
+                    solved: userData?.solvedProblem || 0,
+                    contestRating: Math.round(contestData?.contestRating) || 0,
+                    topPercentage: contestData?.contestTopPercentage || 0,
                 });
 
-                if (calData.submissionCalendar) {
+                if (calData?.submissionCalendar) {
                     const submissionCalendar = JSON.parse(calData.submissionCalendar);
                     const formatData = Object.keys(submissionCalendar).map((timestamp) => {
                         const date = new Date(parseInt(timestamp) * 1000);
@@ -62,6 +59,15 @@ export default function LeetCode() {
                 }
             } catch (error) {
                 console.error("Failed to fetch LeetCode data", error);
+                // Fallback to empty calendar to stop loading animation
+                const end = new Date();
+                const start = new Date();
+                start.setFullYear(end.getFullYear() - 1);
+                const fallbackCalendarData = [];
+                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    fallbackCalendarData.push({ date: d.toISOString().split("T")[0], count: 0, level: 0 });
+                }
+                setCalendarData(fallbackCalendarData);
             }
         };
         fetchData();
