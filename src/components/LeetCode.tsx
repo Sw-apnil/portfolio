@@ -74,8 +74,8 @@ export default function LeetCode() {
     }, []);
 
     const greenTheme = {
-        light: ['#e8f5e9', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-        dark: ['#142e1d', '#0e4429', '#006d32', '#26a641', '#39d353'],
+        light: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
+        dark: ['#1e1e24', '#0e4429', '#006d32', '#26a641', '#39d353'],
     };
 
     return (

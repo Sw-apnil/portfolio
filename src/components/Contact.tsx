@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import emailjs from '@emailjs/browser';
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Send,
@@ -52,18 +53,36 @@ const socials = [
 ];
 
 export default function Contact() {
+    const formRef = useRef<HTMLFormElement>(null);
     const [formData, setFormData] = useState({ name: "", email: "", message: "" });
     const [submitted, setSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const subject = `Portfolio Contact from ${formData.name}`;
-        const body = `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
-        window.open(
-            `mailto:swapnil414416@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-        );
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 3000);
+        if (!formRef.current) return;
+
+        setIsSubmitting(true);
+        setError("");
+
+        try {
+            await emailjs.sendForm(
+                process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID",
+                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID",
+                formRef.current,
+                process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY"
+            );
+
+            setSubmitted(true);
+            setFormData({ name: "", email: "", message: "" });
+            setTimeout(() => setSubmitted(false), 5000);
+        } catch (err) {
+            console.error("Failed to send email:", err);
+            setError("Failed to send message. Please try again later.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -124,7 +143,7 @@ export default function Contact() {
                                     </motion.a>
                                 ))}
 
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, x: -20 }}
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
@@ -154,7 +173,7 @@ export default function Contact() {
                                 {/* Subtle animated background glow */}
                                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-accent/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
 
-                                <motion.h3 
+                                <motion.h3
                                     className="text-2xl font-bold text-text-primary mb-6"
                                     initial={{ opacity: 0, y: -10 }}
                                     whileInView={{ opacity: 1, y: 0 }}
@@ -164,7 +183,12 @@ export default function Contact() {
                                     Send a Message <span className="text-accent animate-pulse">✨</span>
                                 </motion.h3>
 
-                                <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+                                <form ref={formRef} onSubmit={handleSubmit} className="space-y-5 relative z-10">
+                                    {error && (
+                                        <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm">
+                                            {error}
+                                        </div>
+                                    )}
                                     <div className="grid sm:grid-cols-2 gap-5">
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
@@ -178,12 +202,14 @@ export default function Contact() {
                                             <input
                                                 type="text"
                                                 id="name"
+                                                name="name"
                                                 required
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                disabled={isSubmitting}
                                                 className="w-full px-4 py-3 rounded-2xl bg-background border border-border border-b-4 text-text-primary 
                                                 placeholder:text-text-secondary/40 text-[15px] focus:outline-none focus:border-accent 
-                                                transition-all duration-300 hover:border-text-secondary/30"
+                                                transition-all duration-300 hover:border-text-secondary/30 disabled:opacity-50"
                                                 placeholder="John Doe"
                                             />
                                         </motion.div>
@@ -200,12 +226,14 @@ export default function Contact() {
                                             <input
                                                 type="email"
                                                 id="email"
+                                                name="email"
                                                 required
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                disabled={isSubmitting}
                                                 className="w-full px-4 py-3 rounded-2xl bg-background border border-border border-b-4 text-text-primary 
                                                 placeholder:text-text-secondary/40 text-[15px] focus:outline-none focus:border-accent 
-                                                transition-all duration-300 hover:border-text-secondary/30"
+                                                transition-all duration-300 hover:border-text-secondary/30 disabled:opacity-50"
                                                 placeholder="john@example.com"
                                             />
                                         </motion.div>
@@ -222,13 +250,15 @@ export default function Contact() {
                                         </label>
                                         <textarea
                                             id="message"
+                                            name="message"
                                             rows={4}
                                             required
                                             value={formData.message}
                                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                            disabled={isSubmitting}
                                             className="w-full px-4 py-3 rounded-2xl bg-background border border-border border-b-4 text-text-primary 
                                             placeholder:text-text-secondary/40 text-[15px] focus:outline-none focus:border-accent 
-                                            transition-all duration-300 hover:border-text-secondary/30 resize-none"
+                                            transition-all duration-300 hover:border-text-secondary/30 resize-none disabled:opacity-50"
                                             placeholder="Tell me about your project or just say hi..."
                                         />
                                     </motion.div>
@@ -241,9 +271,10 @@ export default function Contact() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         type="submit"
+                                        disabled={isSubmitting || submitted}
                                         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-accent text-white 
                                         font-bold text-[15px] rounded-2xl hover:bg-accent-hover transition-all duration-300 
-                                        shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(var(--accent)/0.3)] shadow-accent/20 border-b-4 border-accent-hover"
+                                        shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(var(--accent)/0.3)] shadow-accent/20 border-b-4 border-accent-hover disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
                                         <AnimatePresence mode="wait">
                                             {submitted ? (
@@ -256,6 +287,17 @@ export default function Contact() {
                                                 >
                                                     <CheckCircle2 className="w-5 h-5" />
                                                     Message Sent!
+                                                </motion.div>
+                                            ) : isSubmitting ? (
+                                                <motion.div
+                                                    key="loading"
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 0.8 }}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    Sending...
                                                 </motion.div>
                                             ) : (
                                                 <motion.div
@@ -275,7 +317,7 @@ export default function Contact() {
                             </div>
 
                             {/* Available for Work Box */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
@@ -283,17 +325,17 @@ export default function Contact() {
                                 className="bg-card rounded-3xl border border-border p-6 sm:p-8 flex flex-col items-center justify-center text-center shadow-md hover:shadow-lg transition-all duration-300"
                             >
                                 <div className="relative flex items-center justify-center w-16 h-16 mb-4">
-                                    <motion.div 
+                                    <motion.div
                                         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
                                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                         className="absolute inset-0 bg-green-500 rounded-full"
                                     />
                                     <div className="w-8 h-8 bg-green-500 rounded-full z-10 shadow-[0_0_15px_rgba(34,197,94,0.6)]"></div>
                                 </div>
-                                
+
                                 <h3 className="text-xl font-bold text-green-600 dark:text-green-500 mb-2 tracking-wide">Available for Work</h3>
                                 <p className="text-text-secondary text-sm mb-5">Open to new opportunities and exciting projects</p>
-                                
+
                                 <div className="px-4 py-1.5 border border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400 font-semibold text-xs rounded-full cursor-default hover:bg-green-500/20 transition-colors">
                                     Accepting Projects
                                 </div>

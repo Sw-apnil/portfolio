@@ -55,7 +55,7 @@ async function main() {
         const topPercentage = contestRes.data?.userContestRanking?.topPercentage || 0;
 
         // 3. Calendar
-        const qCal = `query userProfileCalendar($username: String!) { matchedUser(username: $username) { userCalendar(year: 2024) { submissionCalendar } } }`;
+        const qCal = `query userProfileCalendar($username: String!) { matchedUser(username: $username) { userCalendar { submissionCalendar } } }`;
         const calRes = await fetchGraphQL(qCal, { username });
         const submissionCalendar = calRes.data?.matchedUser?.userCalendar?.submissionCalendar || "{}";
 
