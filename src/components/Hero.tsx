@@ -101,7 +101,7 @@ export default function Hero() {
                         View Projects
                     </a>
                     <a
-                        href="https://drive.google.com/file/d/18esQsfR6jAcK516mdPJiSZnh5R3s4TjY/view?usp=drive_link"
+                        href="https://drive.google.com/file/d/1BtfqaiO95hqXghcSnBIfv9i7ygmkzan1/view?usp=drivesdk"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-7 py-3.5 bg-card text-text-primary font-semibold 
